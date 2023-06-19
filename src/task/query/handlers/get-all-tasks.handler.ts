@@ -15,7 +15,7 @@ export class GetAllTasksHandler implements IQueryHandler<GetAllTasksQuery> {
   ) {}
 
   async execute(query: GetAllTasksQuery): Promise<GetAllTasksResponse> {
-    const { page = 1, limit = 20, date } = query;
+    const { page = 1, limit = 20, date, user } = query;
     const findQuery: { date?: { $gt: number; $lt: number } } = {};
 
     if (date) {
@@ -33,7 +33,7 @@ export class GetAllTasksHandler implements IQueryHandler<GetAllTasksQuery> {
     const [toDo, toDecide, toDelegate, toDelete] = await Promise.all(
       Object.values(TaskType).map((type) =>
         this.taskModel
-          .find({ type, ...findQuery })
+          .find({ type, creator: user, ...findQuery })
           .limit(limit)
           .skip((page - 1) * limit),
       ),

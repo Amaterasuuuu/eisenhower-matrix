@@ -13,8 +13,8 @@ export class GetTaskByIdHandler implements IQueryHandler<GetTaskByIdQuery> {
   ) {}
 
   async execute(query: GetTaskByIdQuery): Promise<ITask> {
-    const { _id } = query;
-    const task = await this.taskModel.findOne({ _id });
+    const { _id, user } = query;
+    const task = await this.taskModel.findOne({ _id, creator: user });
     if (!task) {
       throw new NotFoundException('Task is not defined');
     }

@@ -13,7 +13,14 @@ export class CreateTaskHandler implements ICommandHandler<CreateTaskCommand> {
   ) {}
 
   async execute(command: CreateTaskCommand): Promise<ITask> {
-    const { title, description, type, date = new Date(), deadline } = command;
+    const {
+      title,
+      description,
+      type,
+      date = new Date(),
+      deadline,
+      user,
+    } = command;
 
     const day = new Date(date);
     if (isNaN(day.getDate())) {
@@ -28,6 +35,7 @@ export class CreateTaskHandler implements ICommandHandler<CreateTaskCommand> {
         $gte: day.getTime(),
         $lt: day.getTime() + 24 * 60 * 59 * 1000,
       },
+      creator: user,
     });
     if (exist) {
       throw new ConflictException(
@@ -41,6 +49,7 @@ export class CreateTaskHandler implements ICommandHandler<CreateTaskCommand> {
       type,
       date,
       deadline,
+      creator: user,
     });
 
     return await newTask.save();

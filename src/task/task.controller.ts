@@ -7,6 +7,7 @@ import {
   Post,
   Delete,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import {
@@ -17,7 +18,10 @@ import {
   ApiOkResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
+  ApiSecurity,
 } from '@nestjs/swagger';
+import { AuthGuard, CurrentUser } from 'src/auth';
+import { IUser } from 'src/user';
 import { ExceptionDto, FindByIdDto, SuccessDto } from '../utils';
 import { Task } from './entity';
 import { ITask } from './interface';
@@ -35,6 +39,8 @@ import {
   EditTaskCommand,
 } from './command';
 
+@ApiSecurity('bearer')
+@UseGuards(AuthGuard)
 @ApiTags('Task')
 @Controller('task')
 export class TaskController {
@@ -50,8 +56,11 @@ export class TaskController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized', type: ExceptionDto })
   async findAll(
     @Query() { page, limit, date }: GetAllTasksDto,
+    @CurrentUser() user: IUser,
   ): Promise<GetAllTasksResponse> {
-    return await this.queryBus.execute(new GetAllTasksQuery(page, limit, date));
+    return await this.queryBus.execute(
+      new GetAllTasksQuery(page, limit, date, user),
+    );
   }
 
   @Post()

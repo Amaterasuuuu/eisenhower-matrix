@@ -1,3 +1,4 @@
+import { IUser } from 'src/user';
 import { TaskType } from 'src/task/enum';
 
 export class CreateTaskCommand {
@@ -7,5 +8,6 @@ export class CreateTaskCommand {
     public readonly type: TaskType,
     public readonly date?: Date,
     public readonly deadline?: Date,
+    public readonly user?: IUser,
   ) {}
 }
