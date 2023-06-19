@@ -13,19 +13,19 @@ export class CreateTaskHandler implements ICommandHandler<CreateTaskCommand> {
   ) {}
 
   async execute(command: CreateTaskCommand): Promise<ITask> {
-    const { title, desctiption, type, date = new Date(), deadline } = command;
+    const { title, description, type, date = new Date(), deadline } = command;
 
     const day = new Date(date);
     if (isNaN(day.getDate())) {
       throw new BadRequestException('Invalid Date!');
     }
     const timezone = day.getTimezoneOffset();
-    day.setHours(0, 0 - timezone, 1);
+    day.setHours(0, 0 - timezone, -1);
 
     const exist = await this.taskModel.findOne({
       title,
       date: {
-        $gt: day.getTime(),
+        $gte: day.getTime(),
         $lt: day.getTime() + 24 * 60 * 59 * 1000,
       },
     });
@@ -37,7 +37,7 @@ export class CreateTaskHandler implements ICommandHandler<CreateTaskCommand> {
 
     const newTask = new this.taskModel({
       title,
-      desctiption,
+      description,
       type,
       date,
       deadline,

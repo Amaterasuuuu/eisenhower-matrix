@@ -21,13 +21,19 @@ import {
 import { ExceptionDto, FindByIdDto, SuccessDto } from '../utils';
 import { Task } from './entity';
 import { ITask } from './interface';
-import { CreateTaskDto, GetAllTasksDto, GetAllTasksResponse } from './dto';
+import {
+  CreateTaskDto,
+  EditTaskDto,
+  GetAllTasksDto,
+  GetAllTasksResponse,
+} from './dto';
+import { GetAllTasksQuery } from './query';
 import {
   CompleteTaskCommand,
   CreateTaskCommand,
   DeleteTaskCommand,
+  EditTaskCommand,
 } from './command';
-import { GetAllTasksQuery } from './query';
 
 @ApiTags('Task')
 @Controller('task')
@@ -50,7 +56,7 @@ export class TaskController {
 
   @Post()
   @ApiOperation({ summary: 'Create new task' })
-  @ApiOkResponse({ description: 'Created task', type: Task })
+  @ApiOkResponse({ description: 'Task was created successfully', type: Task })
   @ApiBadRequestResponse({ description: 'Invalid Date!', type: ExceptionDto })
   @ApiUnauthorizedResponse({ description: 'Unauthorized', type: ExceptionDto })
   @ApiConflictResponse({
@@ -66,6 +72,31 @@ export class TaskController {
   }
 
   @Patch('/:id')
+  @ApiOperation({ summary: 'Edit such task' })
+  @ApiOkResponse({
+    description: 'Task was edited successfully',
+    type: Task,
+  })
+  @ApiBadRequestResponse({ description: 'Invalid Date!', type: ExceptionDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized', type: ExceptionDto })
+  @ApiNotFoundResponse({
+    description: 'Task is not defined!',
+    type: ExceptionDto,
+  })
+  @ApiConflictResponse({
+    description: 'Task with similar title for this day is already exists!',
+    type: ExceptionDto,
+  })
+  async edit(
+    @Param() { id }: FindByIdDto,
+    @Body() { title, description, type, date, deadline }: EditTaskDto,
+  ): Promise<ITask> {
+    return await this.commandBus.execute(
+      new EditTaskCommand(id, title, description, type, date, deadline),
+    );
+  }
+
+  @Patch('/:id/complete')
   @ApiOperation({ summary: 'Complete such task' })
   @ApiOkResponse({
     description: 'Task was completed successfully',
